@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prendre un Selfie</title>
+</head>
+<body>
+    <video id="video" width="100%" autoplay></video>
+    <button id="capture">📷 Prendre un selfie</button>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <p id="linkContainer"></p>
+
+    <script>
+        (function() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                .then(function(stream) {
+                    document.getElementById("video").srcObject = stream;
+                });
+
+            document.getElementById("capture").onclick = function() {
+                let canvas = document.getElementById("canvas");
+                let video = document.getElementById("video");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext("2d").drawImage(video, 0, 0);
+
+                let imageUrl = canvas.toDataURL("image/png");
+                let linkContainer = document.getElementById("linkContainer");
+                linkContainer.innerHTML = '<a href="' + imageUrl + '" download="selfie.png">📎 Télécharger le selfie</a>';
+            };
+        })();
+    </script>
+</body>
+</html>
