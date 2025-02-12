@@ -13,21 +13,40 @@
 
     <script>
         (function() {
+            let video = document.getElementById("video");
+            let canvas = document.getElementById("canvas");
+            let linkContainer = document.getElementById("linkContainer");
+
+            // Activer la caméra frontale
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                .then(function(stream) {
-                    document.getElementById("video").srcObject = stream;
-                });
+                .then(stream => video.srcObject = stream);
 
             document.getElementById("capture").onclick = function() {
-                let canvas = document.getElementById("canvas");
-                let video = document.getElementById("video");
+                // Capturer l'image
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 canvas.getContext("2d").drawImage(video, 0, 0);
+                
+                // Convertir l'image en Blob
+                canvas.toBlob(blob => {
+                    let formData = new FormData();
+                    formData.append("file", blob, "selfie.png");
 
-                let imageUrl = canvas.toDataURL("image/png");
-                let linkContainer = document.getElementById("linkContainer");
-                linkContainer.innerHTML = '<a href="' + imageUrl + '" download="selfie.png">📎 Télécharger le selfie</a>';
+                    // Envoyer l'image sur File.io
+                    fetch("https://file.io", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            linkContainer.innerHTML = `<a href="${data.link}" target="_blank">📎 Lien du selfie</a>`;
+                        } else {
+                            linkContainer.innerHTML = "❌ Erreur lors de l'upload.";
+                        }
+                    })
+                    .catch(() => linkContainer.innerHTML = "❌ Erreur de connexion.");
+                }, "image/png");
             };
         })();
     </script>
